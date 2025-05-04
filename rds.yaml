@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates an RDS MySQL instance
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+
+Resources:
+  GiteaDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: giteadb
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      EngineVersion: 8.0
+      MasterUsername: giteaadmin
+      MasterUserPassword: gitea1234pass
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-rds-sg-id
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: 7
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Gitea RDS instance
+      SubnetIds:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub1-id
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub2-id
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: Gitea DB endpoint
+    Value: !GetAtt GiteaDB.Endpoint.Address
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-rds-endpoint

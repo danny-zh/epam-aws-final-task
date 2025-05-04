@@ -1,0 +1,80 @@
+# main.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main stack to deploy Gitea infrastructure using nested stacks.
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+    Default: testing
+
+  AWSRegion:
+    Type: String
+    Description: AWS Region
+    Default: us-east-1
+    AllowedValues:
+      - us-east-1
+      - us-west-2
+  
+  S3Bucket:
+    Type: String
+    Description: S3 Bucket for nested stacks
+    Default: https://cf-templates--1hzlje7ed0y9-us-east-1.s3.us-east-1.amazonaws.com/gitea
+
+Resources:
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/network-stack.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+        AWSRegion: !Ref AWSRegion
+
+  SecurityGroupsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/security-groups.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+
+  ALBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/alb.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+
+  # RDSStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: rds.yaml
+  #     Parameters:
+  #       CustomIdentifier: !Ref CustomIdentifier
+
+  # EFSStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: efs.yaml
+  #     Parameters:
+  #       CustomIdentifier: !Ref CustomIdentifier
+
+  # IAMStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: iam.yaml
+  #     Parameters:
+  #       CustomIdentifier: !Ref CustomIdentifier
+
+  # EC2Stack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ec2.yaml
+  #     Parameters:
+  #       CustomIdentifier: !Ref CustomIdentifier
+
+  # MonitoringStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: monitoring.yaml
+  #     Parameters:
+  #       CustomIdentifier: !Ref CustomIdentifier

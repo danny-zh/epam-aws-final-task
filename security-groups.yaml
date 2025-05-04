@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Security groups for Gitea infrastructure.
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP traffic for ALB
+      VpcId: 
+        Fn::ImportValue: 
+          !Sub cmtr-${CustomIdentifier}-vpc-id
+      Tags:
+        - Key: Name
+          Value: !Sub cmtr-${CustomIdentifier}-alb-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and HTTP traffic to EC2 instances
+      VpcId:
+       Fn::ImportValue: 
+          !Sub cmtr-${CustomIdentifier}-vpc-id
+      Tags:
+        - Key: Name
+          Value: !Sub cmtr-${CustomIdentifier}-ec2-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow MySQL access from EC2
+      VpcId:  
+        Fn::ImportValue: 
+          !Sub cmtr-${CustomIdentifier}-vpc-id
+      Tags:
+        - Key: Name
+          Value: !Sub cmtr-${CustomIdentifier}-rds-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
+
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow NFS access from EC2
+      VpcId: 
+        Fn::ImportValue: 
+          !Sub cmtr-${CustomIdentifier}-vpc-id
+      Tags:
+        - Key: Name
+          Value: !Sub cmtr-${CustomIdentifier}-efs-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
+
+Outputs:
+  ALBSecurityGroupId:
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-alb-sg-id
+
+  EC2SecurityGroupId:
+    Value: !Ref EC2SecurityGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-ec2-sg-id
+
+  RDSSecurityGroupId:
+    Value: !Ref RDSSecurityGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-rds-sg-id
+
+  EFSSecurityGroupId:
+    Value: !Ref EFSSecurityGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-efs-sg-id

@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates ALB, Listener, and Target Group
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "cmtr-${CustomIdentifier}-alb"
+      Scheme: internet-facing
+      Subnets:
+        - Fn::ImportValue: !Sub "cmtr-${CustomIdentifier}-pub-sub1-id"
+        - Fn::ImportValue: !Sub "cmtr-${CustomIdentifier}-pub-sub2-id"
+      SecurityGroups:
+        - Fn::ImportValue: !Sub "cmtr-${CustomIdentifier}-alb-sg-id"
+      Type: application
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "cmtr-${CustomIdentifier}-tg"
+      Port: 80
+      Protocol: HTTP
+      VpcId: 
+        Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-vpc-id
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: 80
+      HealthCheckPath: /
+      TargetType: instance
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+Outputs:
+  ALBArn:
+    Description: ARN of the Application Load Balancer
+    Value: !Ref LoadBalancer
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-alb-arn
+
+  TargetGroupArn:
+    Description: ARN of the Target Group
+    Value: !Ref TargetGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-tg-arn
