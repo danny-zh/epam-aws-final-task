@@ -13,5 +13,9 @@ update-stack:
 		--region ${REGION} \
 		--parameters ParameterKey=GiteaAdmin,ParameterValue=${GITEAADMIN} ParameterKey=GiteaPass,ParameterValue=${GITEAPASS} ParameterKey=S3Bucket,ParameterValue=${S3BUCKET}
 
-		
 deploy: upload-files update-stack
+
+destroy:
+	aws cloudformation delete-stack \
+		--stack-name ${STACKNAME} \
+		--region ${REGION}

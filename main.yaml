@@ -19,7 +19,6 @@ Parameters:
   S3Bucket:
     Type: String
     Description: S3 Bucket for nested stacks
-    Default: https://cf-templates--1hzlje7ed0y9-us-east-1.s3.us-east-1.amazonaws.com/gitea
   
   GiteaAdmin:
     Type: String
@@ -69,19 +68,29 @@ Resources:
       Parameters:
         CustomIdentifier: !Ref CustomIdentifier
 
-  # IAMStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub ${S3Bucket}/iam.yaml
-  #     Parameters:
-  #       CustomIdentifier: !Ref CustomIdentifier
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/iam.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
 
-  # EC2Stack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: ec2.yaml
-  #     Parameters:
-  #       CustomIdentifier: !Ref CustomIdentifier
+  LTStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/launch-template.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+        GiteaAdmin: !Ref GiteaAdmin
+        GiteaPass: !Ref GiteaPass
+  
+  AutoScalingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/autoscaling.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+      
 
   # MonitoringStack:
   #   Type: AWS::CloudFormation::Stack

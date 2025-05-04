@@ -52,7 +52,7 @@ Resources:
                   - DB_TYPE=mysql
                   - DB_HOST=${!Sub cmtr-${CustomIdentifier}-rds-endpoint}:3306
                   - DB_NAME=${GiteaAdmin}
-                  - DB_USER=${GiteadPass}
+                  - DB_USER=${GiteaPass}
                   - DB_PASSWD=gitea1234pass
             EOF
             docker-compose -f /gitea/docker-compose.yml up -d
