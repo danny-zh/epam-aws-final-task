@@ -20,6 +20,15 @@ Parameters:
     Type: String
     Description: S3 Bucket for nested stacks
     Default: https://cf-templates--1hzlje7ed0y9-us-east-1.s3.us-east-1.amazonaws.com/gitea
+  
+  GiteaAdmin:
+    Type: String
+    Description: Gitea database admin username
+
+  GiteaPass:
+    Type: String
+    Description: Gitea database admin password
+    NoEcho: true
 
 Resources:
   NetworkStack:
@@ -44,24 +53,26 @@ Resources:
       Parameters:
         CustomIdentifier: !Ref CustomIdentifier
 
-  # RDSStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: rds.yaml
-  #     Parameters:
-  #       CustomIdentifier: !Ref CustomIdentifier
+  RDSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:  !Sub ${S3Bucket}/rds.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
+        GiteaAdmin: !Ref GiteaAdmin
+        GiteaPass: !Ref GiteaPass
 
-  # EFSStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: efs.yaml
-  #     Parameters:
-  #       CustomIdentifier: !Ref CustomIdentifier
+  EFSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:  !Sub ${S3Bucket}/efs.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
 
   # IAMStack:
   #   Type: AWS::CloudFormation::Stack
   #   Properties:
-  #     TemplateURL: iam.yaml
+  #     TemplateURL: !Sub ${S3Bucket}/iam.yaml
   #     Parameters:
   #       CustomIdentifier: !Ref CustomIdentifier
 

@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Launch Template for EC2 instances running Gitea
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+  GiteaAdmin:
+    Type: String
+    Description: Gitea database admin username
+  GiteaPass:
+    Type: String
+    Description: Gitea database admin password
+    NoEcho: true
+
+Resources:
+  GiteaLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub cmtr-${CustomIdentifier}-lt
+      LaunchTemplateData:
+        InstanceType: t2.micro
+        ImageId: ami-0c101f26f147fa7fd  # Amazon Linux 2023 AMI
+        IamInstanceProfile:
+          Name: 
+            Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-instance-profile
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-ec2-sg-id
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y docker
+            systemctl start docker
+            systemctl enable docker
+            curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+            mkdir /gitea
+            mount -t nfs4 -o nfsvers=4.1 \
+              $(aws efs describe-mount-targets --file-system-id $(aws efs describe-file-systems --query "FileSystems[?Name=='cmtr-${CustomIdentifier}-efs'].FileSystemId" --output text) \
+              --query "MountTargets[0].IpAddress" --output text):/ /gitea
+            cat > /gitea/docker-compose.yml <<EOF
+            version: '3'
+            services:
+              gitea:
+                image: gitea/gitea:latest
+                ports:
+                  - "80:3000"
+                volumes:
+                  - /gitea:/data
+                environment:
+                  - DB_TYPE=mysql
+                  - DB_HOST=${!Sub cmtr-${CustomIdentifier}-rds-endpoint}:3306
+                  - DB_NAME=${GiteaAdmin}
+                  - DB_USER=${GiteadPass}
+                  - DB_PASSWD=gitea1234pass
+            EOF
+            docker-compose -f /gitea/docker-compose.yml up -d
+
+Outputs:
+  LaunchTemplateId:
+    Description: Launch template ID
+    Value: !Ref GiteaLaunchTemplate
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-lt-id

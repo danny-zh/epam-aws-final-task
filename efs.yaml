@@ -1,0 +1,41 @@
+# efs.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates an Amazon EFS file system with mount targets
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+
+Resources:
+  GiteaEFS:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+
+  EFSMountTargetAZA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref GiteaEFS
+      SubnetId: 
+        Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub1-id
+      SecurityGroups:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-efs-sg-id
+
+  EFSMountTargetAZB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref GiteaEFS
+      SubnetId: 
+        Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub2-id
+      SecurityGroups:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-efs-sg-id
+
+Outputs:
+  GiteaEFSId:
+    Description: ID of the EFS file system
+    Value: !Ref GiteaEFS
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-efs-id

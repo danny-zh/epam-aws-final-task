@@ -99,5 +99,3 @@ cdk.out/
 
 # Generated files
 generated/
-
-s3_upload.sh

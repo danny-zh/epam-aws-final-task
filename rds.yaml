@@ -4,7 +4,14 @@ Description: Creates an RDS MySQL instance
 Parameters:
   CustomIdentifier:
     Type: String
-    Description: Unique identifier for resource naming.
+    Description: Unique identifier for resource naming
+  GiteaAdmin:
+    Type: String
+    Description: Gitea database admin username
+  GiteaPass:
+    Type: String
+    Description: Gitea database admin password
+    NoEcho: true
 
 Resources:
   GiteaDB:
@@ -14,9 +21,9 @@ Resources:
       AllocatedStorage: 20
       DBInstanceClass: db.t3.micro
       Engine: mysql
-      EngineVersion: 8.0
-      MasterUsername: giteaadmin
-      MasterUserPassword: gitea1234pass
+      EngineVersion: 8.0.32
+      MasterUsername: !Sub ${GiteaAdmin}
+      MasterUserPassword: !Sub ${GiteaPass}
       VPCSecurityGroups:
         - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-rds-sg-id
       DBSubnetGroupName: !Ref DBSubnetGroup

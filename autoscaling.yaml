@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Auto Scaling Group for Gitea instances
+
+Parameters:
+  CustomIdentifier:
+    Type: String
+    Description: Unique identifier for resource naming.
+
+Resources:
+  GiteaAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub1-id
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-priv-sub2-id
+      LaunchTemplate:
+        LaunchTemplateId:
+          Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-lt-id
+        Version: '$Latest'
+      MinSize: '2'
+      MaxSize: '4'
+      TargetGroupARNs:
+        - Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-tg-arn
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
+
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref GiteaAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ALBRequestCountPerTarget
+          ResourceLabel: !Sub "cmtr-${CustomIdentifier-alb-dns}/cmtr-${CustomIdentifier}-tg"
+        TargetValue: 10.0
+
+Outputs:
+  ASGName:
+    Description: Auto Scaling Group name
+    Value: !Ref GiteaAutoScalingGroup
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-asg-name
