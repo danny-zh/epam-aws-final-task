@@ -54,3 +54,9 @@ Outputs:
     Value: !Ref TargetGroup
     Export:
       Name: !Sub cmtr-${CustomIdentifier}-tg-arn
+  
+  DNSName:
+    Description: DNS Name of the Application Load Balancer
+    Value: !GetAtt LoadBalancer.DNSName
+    Export:
+      Name: !Sub cmtr-${CustomIdentifier}-alb-dns

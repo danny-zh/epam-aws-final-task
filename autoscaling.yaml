@@ -24,16 +24,17 @@ Resources:
       HealthCheckType: EC2
       HealthCheckGracePeriod: 300
 
-  ScaleUpPolicy:
-    Type: AWS::AutoScaling::ScalingPolicy
-    Properties:
-      AutoScalingGroupName: !Ref GiteaAutoScalingGroup
-      PolicyType: TargetTrackingScaling
-      TargetTrackingConfiguration:
-        PredefinedMetricSpecification:
-          PredefinedMetricType: ALBRequestCountPerTarget
-          ResourceLabel: !Sub "cmtr-${CustomIdentifier-alb-dns}/cmtr-${CustomIdentifier}-tg"
-        TargetValue: 10.0
+  # ScaleUpPolicy:
+  #   Type: AWS::AutoScaling::ScalingPolicy
+  #   Properties:
+  #     AutoScalingGroupName: !Ref GiteaAutoScalingGroup
+  #     PolicyType: TargetTrackingScaling
+  #     TargetTrackingConfiguration:
+  #       PredefinedMetricSpecification:
+  #         PredefinedMetricType: ALBRequestCountPerTarget
+  #         ResourceLabel: 
+  #           Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-tg-arn"
+  #       TargetValue: 10.0
 
 Outputs:
   ASGName:

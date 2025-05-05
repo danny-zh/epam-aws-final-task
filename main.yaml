@@ -6,7 +6,7 @@ Parameters:
   CustomIdentifier:
     Type: String
     Description: Unique identifier for resource naming.
-    Default: testing
+    Default: 9be1831a
 
   AWSRegion:
     Type: String
@@ -40,6 +40,8 @@ Resources:
 
   SecurityGroupsStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/security-groups.yaml
       Parameters:
@@ -47,6 +49,9 @@ Resources:
 
   ALBStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - SecurityGroupsStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/alb.yaml
       Parameters:
@@ -54,6 +59,9 @@ Resources:
 
   RDSStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - SecurityGroupsStack
     Properties:
       TemplateURL:  !Sub ${S3Bucket}/rds.yaml
       Parameters:
@@ -63,6 +71,9 @@ Resources:
 
   EFSStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - SecurityGroupsStack
     Properties:
       TemplateURL:  !Sub ${S3Bucket}/efs.yaml
       Parameters:
@@ -77,6 +88,10 @@ Resources:
 
   LTStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - SecurityGroupsStack
+      - IAMStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/launch-template.yaml
       Parameters:
@@ -86,6 +101,14 @@ Resources:
   
   AutoScalingStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - SecurityGroupsStack
+      - RDSStack
+      - EFSStack
+      - IAMStack
+      - ALBStack
+      - LTStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/autoscaling.yaml
       Parameters:
@@ -94,6 +117,8 @@ Resources:
 
   # MonitoringStack:
   #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - AutoScalingStack
   #   Properties:
   #     TemplateURL: monitoring.yaml
   #     Parameters:
