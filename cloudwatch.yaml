@@ -24,7 +24,14 @@ Resources:
                 "metrics": [
                   [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "giteadb" ]
                 ],
-                "title": "RDS CPU Utilization"
+                "title": "RDS CPU Utilization",
+                "period":300,
+                "stat":"Average",
+                "region":"us-east-1",
+                "liveData": false,
+                "legend": {
+                    "position": "right"
+              }
               }
             },
             {
@@ -37,7 +44,14 @@ Resources:
                 "metrics": [
                   [ "AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", "giteadb" ]
                 ],
-                "title": "RDS Connections"
+                "title": "RDS Connections",
+                "period":300,
+                "stat":"Average",
+                "region":"us-east-1",
+                "liveData": false,
+                "legend": {
+                    "position": "right"
+                }
               }
             },
             {
@@ -48,9 +62,16 @@ Resources:
               "height": 6,
               "properties": {
                 "metrics": [
-                  [ "AWS/ApplicationELB", "HealthyHostCount", "TargetGroup", "${cmtr-${CustomIdentifier}-tg}", "LoadBalancer", "${cmtr-${CustomIdentifier}-alb}" ]
+                  [ "AWS/ApplicationELB", "HealthyHostCount", "TargetGroup", "cmtr-${CustomIdentifier}-tg", "LoadBalancer", "$cmtr-${CustomIdentifier}-alb" ]
                 ],
-                "title": "ALB Healthy Hosts"
+                "title": "ALB Healthy Hosts",
+                "period":300,
+                "stat":"Average",
+                "region":"us-east-1",
+                "liveData": false,
+                "legend": {
+                    "position": "right"
+                }
               }
             },
             {
@@ -61,9 +82,16 @@ Resources:
               "height": 6,
               "properties": {
                 "metrics": [
-                  [ "AWS/ApplicationELB", "RequestCount", "LoadBalancer", "${cmtr-${CustomIdentifier}-alb}" ]
+                  [ "AWS/ApplicationELB", "RequestCount", "LoadBalancer", "$cmtr-${CustomIdentifier}-alb" ]
                 ],
-                "title": "ALB Request Count"
+                "title": "ALB Request Count",
+                "period":300,
+                "stat":"Average",
+                "region":"us-east-1",
+                "liveData": false,
+                "legend": {
+                    "position": "right"
+                }
               }
             },
             {
@@ -74,9 +102,16 @@ Resources:
               "height": 6,
               "properties": {
                 "metrics": [
-                  [ "AWS/EFS", "ClientConnections", "FileSystemId", "${cmtr-${CustomIdentifier}-efs}" ]
+                  [ "AWS/EFS", "ClientConnections", "FileSystemId", "$cmtr-${CustomIdentifier}-efs" ]
                 ],
-                "title": "EFS Client Connections"
+                "title": "EFS Client Connections",
+                "period":300,
+                "stat":"Average",
+                "region":"us-east-1",
+                "liveData": false,
+                "legend": {
+                    "position": "right"
+                }
               }
             }
           ]

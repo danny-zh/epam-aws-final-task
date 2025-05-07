@@ -33,29 +33,42 @@ Resources:
             yum install -y docker
             systemctl start docker
             systemctl enable docker
-            curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
+            
+            curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            chmod  +x /usr/local/bin/docker-compose
+
             mkdir /gitea
             mount -t nfs4 -o nfsvers=4.1 \
               $(aws efs describe-mount-targets --file-system-id $(aws efs describe-file-systems --query "FileSystems[?Name=='cmtr-${CustomIdentifier}-efs'].FileSystemId" --output text) \
               --query "MountTargets[0].IpAddress" --output text):/ /gitea
             cat > /gitea/docker-compose.yml <<EOF
-            version: '3'
-            services:
+            networks:
               gitea:
-                image: gitea/gitea:latest
-                ports:
-                  - "80:3000"
+                external: false
+
+            services:
+              server:
+                image: docker.gitea.com/gitea:1.23.7
+                container_name: gitea
+                environment:
+                  - USER_UID=1000
+                  - USER_GID=1000
+                  - GITEA__database__DB_TYPE=mysql
+                  - GITEA__database__HOST=db:3306
+                  - GITEA__database__NAME=${GiteaAdmin}
+                  - GITEA__database__USER=${GiteaAdmin}
+                  - GITEA__database__PASSWD=${GiteaAdmin}
+                networks:
+                  - gitea
                 volumes:
                   - /gitea:/data
-                environment:
-                  - DB_TYPE=mysql
-                  - DB_HOST=${!Sub cmtr-${CustomIdentifier}-rds-endpoint}:3306
-                  - DB_NAME=${GiteaAdmin}
-                  - DB_USER=${GiteaPass}
-                  - DB_PASSWD=gitea1234pass
+                  - /etc/timezone:/etc/timezone:ro
+                  - /etc/localtime:/etc/localtime:ro
+                ports:
+                  - "80:3000"
+                  - "222:22"
             EOF
-            docker-compose -f /gitea/docker-compose.yml up -d
+            #docker-compose -f /gitea/docker-compose.yml up -d
 
 Outputs:
   LaunchTemplateId:

@@ -14,6 +14,9 @@ Resources:
       Encrypted: true
       PerformanceMode: generalPurpose
       ThroughputMode: bursting
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub cmtr-${CustomIdentifier}-efs
 
   EFSMountTargetAZA:
     Type: AWS::EFS::MountTarget

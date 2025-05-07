@@ -5,6 +5,10 @@ Parameters:
   CustomIdentifier:
     Type: String
     Description: Unique identifier for resource naming.
+  AlbArn:
+    Type: String
+  TgArn:
+    Type: String
 
 Resources:
   GiteaAutoScalingGroup:
@@ -16,7 +20,7 @@ Resources:
       LaunchTemplate:
         LaunchTemplateId:
           Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-lt-id
-        Version: '$Latest'
+        Version: "1"
       MinSize: '2'
       MaxSize: '4'
       TargetGroupARNs:
@@ -24,17 +28,22 @@ Resources:
       HealthCheckType: EC2
       HealthCheckGracePeriod: 300
 
-  # ScaleUpPolicy:
-  #   Type: AWS::AutoScaling::ScalingPolicy
-  #   Properties:
-  #     AutoScalingGroupName: !Ref GiteaAutoScalingGroup
-  #     PolicyType: TargetTrackingScaling
-  #     TargetTrackingConfiguration:
-  #       PredefinedMetricSpecification:
-  #         PredefinedMetricType: ALBRequestCountPerTarget
-  #         ResourceLabel: 
-  #           Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-tg-arn"
-  #       TargetValue: 10.0
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref GiteaAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ALBRequestCountPerTarget
+          ResourceLabel: !Join
+            - "/"
+            - - !Select [1, !Split ["/", !Ref AlbArn]]
+              - !Select [2, !Split ["/", !Ref AlbArn]]
+              - !Select [3, !Split ["/", !Ref AlbArn]]
+              - "targetgroup"
+              - !Select [1, !Split ["targetgroup/", !Ref TgArn]]
+        TargetValue: 10.0
 
 Outputs:
   ASGName:

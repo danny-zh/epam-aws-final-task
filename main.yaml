@@ -91,6 +91,7 @@ Resources:
     DependsOn:
       - NetworkStack
       - SecurityGroupsStack
+      - EFSStack
       - IAMStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/launch-template.yaml
@@ -102,19 +103,17 @@ Resources:
   AutoScalingStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - NetworkStack
-      - SecurityGroupsStack
-      - RDSStack
-      - EFSStack
-      - IAMStack
-      - ALBStack
       - LTStack
+      - ALBStack
     Properties:
       TemplateURL: !Sub ${S3Bucket}/autoscaling.yaml
       Parameters:
         CustomIdentifier: !Ref CustomIdentifier
-      
-
+        AlbArn: 
+          Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-alb-arn
+        TgArn: 
+          Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-tg-arn
+        
   # MonitoringStack:
   #   Type: AWS::CloudFormation::Stack
   #   DependsOn:
