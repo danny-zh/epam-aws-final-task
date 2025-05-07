@@ -114,11 +114,11 @@ Resources:
         TgArn: 
           Fn::ImportValue: !Sub cmtr-${CustomIdentifier}-tg-arn
         
-  # MonitoringStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - AutoScalingStack
-  #   Properties:
-  #     TemplateURL: monitoring.yaml
-  #     Parameters:
-  #       CustomIdentifier: !Ref CustomIdentifier
+  MonitoringStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - AutoScalingStack
+    Properties:
+      TemplateURL: !Sub ${S3Bucket}/cloudwatch.yaml
+      Parameters:
+        CustomIdentifier: !Ref CustomIdentifier
